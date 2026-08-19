@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>NY Killzone Clock</title>
+<style>
+  html, body {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+    background: #ffffff;
+    overflow: hidden;
+  }
+  #wrap {
+    width: 100%;
+    height: 100%;
+    display: -webkit-box;
+    display: -webkit-flex;
+    display: flex;
+    -webkit-box-orient: vertical;
+    -webkit-flex-direction: column;
+    flex-direction: column;
+    -webkit-box-pack: center;
+    -webkit-justify-content: center;
+    justify-content: center;
+    -webkit-box-align: center;
+    -webkit-align-items: center;
+    align-items: center;
+    font-family: Helvetica, Arial, sans-serif;
+  }
+  #time {
+    font-size: 14vw;
+    font-weight: bold;
+    color: #000000;
+    letter-spacing: 1px;
+    text-align: center;
+  }
+  #time.kz {
+    color: #d40000;
+  }
+  #date {
+    font-size: 3.5vw;
+    color: #444444;
+    margin-top: 8px;
+    text-align: center;
+  }
+  #status {
+    font-size: 4vw;
+    font-weight: bold;
+    margin-top: 16px;
+    color: #888888;
+    text-align: center;
+  }
+  #status.kz {
+    color: #d40000;
+  }
+</style>
+</head>
+<body>
+<div id="wrap">
+  <div id="time">--:--:--</div>
+  <div id="date">--</div>
+  <div id="status">-</div>
+</div>
+
+<script>
+// Calcule l'heure de New York manuellement (pas besoin d'Intl, marche sur iOS 9)
+function isUSDST(utcDate) {
+  var year = utcDate.getUTCFullYear();
+  // 2e dimanche de mars, 2h locale
+  var marchSecondSunday = new Date(Date.UTC(year, 2, 1));
+  var day = marchSecondSunday.getUTCDay();
+  var offsetToFirstSunday = (7 - day) % 7;
+  var firstSunday = 1 + offsetToFirstSunday;
+  var secondSunday = firstSunday + 7;
+  var dstStart = new Date(Date.UTC(year, 2, secondSunday, 7)); // 2am EST = 7am UTC
+
+  // 1er dimanche de novembre, 2h locale
+  var novFirst = new Date(Date.UTC(year, 10, 1));
+  var novDay = novFirst.getUTCDay();
+  var novOffsetToSunday = (7 - novDay) % 7;
+  var novSunday = 1 + novOffsetToSunday;
+  var dstEnd = new Date(Date.UTC(year, 10, novSunday, 6)); // 2am EDT = 6am UTC
+
+  return utcDate.getTime() >= dstStart.getTime() && utcDate.getTime() < dstEnd.getTime();
+}
+
+function getNYTime() {
+  var now = new Date();
+  var utcMs = now.getTime() + (now.getTimezoneOffset() * 60000);
+  var utcDate = new Date(utcMs);
+  var offsetHours = isUSDST(utcDate) ? -4 : -5;
+  var nyMs = utcMs + (offsetHours * 3600000);
+  return new Date(nyMs);
+}
+
+var days = ["Dimanche","Lundi","Mardi","Mercredi","Jeudi","Vendredi","Samedi"];
+var months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+
+function pad(n) {
+  return n < 10 ? "0" + n : "" + n;
+}
+
+function update() {
+  var ny = getNYTime();
+  var h24 = ny.getUTCHours();
+  var m = ny.getUTCMinutes();
+
+  var ampm = h24 >= 12 ? "PM" : "AM";
+  var h12 = h24 % 12;
+  if (h12 === 0) h12 = 12;
+
+  var timeStr = pad(h12) + ":" + pad(m) + " " + ampm;
+  var dateStr = days[ny.getUTCDay()] + " " + ny.getUTCDate() + " " + months[ny.getUTCMonth()];
+
+  // Killzone: 8:30 - 11:00 NY time (couvre premarket 8h30-9h30 + killzone 9h30-11h00)
+  var minutesNow = h24 * 60 + m;
+  var kzStart = 8 * 60 + 30;
+  var kzEnd = 11 * 60 + 0;
+  var inKZ = minutesNow >= kzStart && minutesNow < kzEnd;
+
+  var timeEl = document.getElementById("time");
+  var statusEl = document.getElementById("status");
+  var dateEl = document.getElementById("date");
+
+  timeEl.innerHTML = timeStr;
+  dateEl.innerHTML = dateStr + " - NY Time";
+
+  if (inKZ) {
+    timeEl.className = "kz";
+    statusEl.className = "kz";
+    var preEnd = 9 * 60 + 30;
+    if (minutesNow < preEnd) {
+      statusEl.innerHTML = "PRE-MARKET";
+    } else {
+      statusEl.innerHTML = "KILLZONE";
+    }
+  } else {
+    timeEl.className = "";
+    statusEl.className = "";
+    statusEl.innerHTML = "-";
+  }
+}
+
+update();
+setInterval(update, 10000);
+</script>
+</body>
+</html>
