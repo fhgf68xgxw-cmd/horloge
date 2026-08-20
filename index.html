@@ -3,6 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
 <title>NY Killzone Clock</title>
 <style>
   html, body {
@@ -56,6 +58,19 @@
   #status.kz {
     color: #d40000;
   }
+  #countdown {
+    font-size: 3vw;
+    color: #666666;
+    margin-top: 10px;
+    text-align: center;
+  }
+  #unlock {
+    position: absolute;
+    bottom: 10px;
+    font-size: 2.5vw;
+    color: #aaaaaa;
+    text-align: center;
+  }
 </style>
 </head>
 <body>
@@ -63,7 +78,9 @@
   <div id="time">--:--:--</div>
   <div id="date">--</div>
   <div id="status">-</div>
+  <div id="countdown"></div>
 </div>
+<div id="unlock">Touche l'écran pour activer le son</div>
 
 <script>
 // Calcule l'heure de New York manuellement (pas besoin d'Intl, marche sur iOS 9)
@@ -103,10 +120,47 @@ function pad(n) {
   return n < 10 ? "0" + n : "" + n;
 }
 
+// --- Son ---
+var beep = new Audio("data:audio/wav;base64,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");
+var soundReady = false;
+function unlockSound() {
+  if (soundReady) return;
+  beep.play().then(function(){ beep.pause(); beep.currentTime = 0; soundReady = true; })
+    .catch(function(){});
+  soundReady = true;
+  var u = document.getElementById("unlock");
+  if (u) u.style.display = "none";
+}
+document.body.addEventListener("touchstart", unlockSound);
+document.body.addEventListener("click", unlockSound);
+
+function playBeep() {
+  if (!soundReady) return;
+  try {
+    beep.currentTime = 0;
+    beep.play();
+  } catch (e) {}
+}
+
+// --- Countdown ---
+var prevZone = "none"; // none | pre | kz
+
+function fmtCountdown(totalSeconds) {
+  if (totalSeconds < 0) totalSeconds = 0;
+  var h = Math.floor(totalSeconds / 3600);
+  var m = Math.floor((totalSeconds % 3600) / 60);
+  var s = totalSeconds % 60;
+  var out = "";
+  if (h > 0) out += h + "h ";
+  out += pad(m) + "m " + pad(s) + "s";
+  return out;
+}
+
 function update() {
   var ny = getNYTime();
   var h24 = ny.getUTCHours();
   var m = ny.getUTCMinutes();
+  var s = ny.getUTCSeconds();
 
   var ampm = h24 >= 12 ? "PM" : "AM";
   var h12 = h24 % 12;
@@ -116,36 +170,60 @@ function update() {
   var dateStr = days[ny.getUTCDay()] + " " + ny.getUTCDate() + " " + months[ny.getUTCMonth()];
 
   // Killzone: 8:30 - 11:00 NY time (couvre premarket 8h30-9h30 + killzone 9h30-11h00)
-  var minutesNow = h24 * 60 + m;
-  var kzStart = 8 * 60 + 30;
-  var kzEnd = 11 * 60 + 0;
-  var inKZ = minutesNow >= kzStart && minutesNow < kzEnd;
+  var secondsNow = h24 * 3600 + m * 60 + s;
+  var kzStart = (8 * 60 + 30) * 60;
+  var preEnd = (9 * 60 + 30) * 60;
+  var kzEnd = (11 * 60 + 0) * 60;
+  var inKZ = secondsNow >= kzStart && secondsNow < kzEnd;
 
   var timeEl = document.getElementById("time");
   var statusEl = document.getElementById("status");
   var dateEl = document.getElementById("date");
+  var cdEl = document.getElementById("countdown");
 
   timeEl.innerHTML = timeStr;
   dateEl.innerHTML = dateStr + " - NY Time";
 
+  var zone; // none | pre | kz
+  var cdText = "";
+
   if (inKZ) {
     timeEl.className = "kz";
     statusEl.className = "kz";
-    var preEnd = 9 * 60 + 30;
-    if (minutesNow < preEnd) {
+    if (secondsNow < preEnd) {
       statusEl.innerHTML = "PRE-MARKET";
+      zone = "pre";
+      cdText = "Killzone dans " + fmtCountdown(preEnd - secondsNow);
     } else {
       statusEl.innerHTML = "KILLZONE";
+      zone = "kz";
+      cdText = "Fin dans " + fmtCountdown(kzEnd - secondsNow);
     }
   } else {
     timeEl.className = "";
     statusEl.className = "";
     statusEl.innerHTML = "-";
+    zone = "none";
+    var secsUntilStart;
+    if (secondsNow < kzStart) {
+      secsUntilStart = kzStart - secondsNow;
+    } else {
+      secsUntilStart = (24 * 3600 - secondsNow) + kzStart;
+    }
+    cdText = "Pre-market dans " + fmtCountdown(secsUntilStart);
   }
+
+  cdEl.innerHTML = cdText;
+
+  // Son sur transition d'entree de zone
+  if (zone !== prevZone && (zone === "pre" || zone === "kz")) {
+    playBeep();
+  }
+  prevZone = zone;
 }
 
 update();
-setInterval(update, 10000);
+setInterval(update, 1000);
 </script>
 </body>
 </html>
