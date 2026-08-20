@@ -105,7 +105,7 @@ function isUSDST(utcDate) {
 
 function getNYTime() {
   var now = new Date();
-  var utcMs = now.getTime() + (now.getTimezoneOffset() * 60000);
+  var utcMs = now.getTime(); // epoch UTC absolu, pas besoin de conversion
   var utcDate = new Date(utcMs);
   var offsetHours = isUSDST(utcDate) ? -4 : -5;
   var nyMs = utcMs + (offsetHours * 3600000);
