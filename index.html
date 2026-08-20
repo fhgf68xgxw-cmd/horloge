@@ -42,6 +42,9 @@
   #time.kz {
     color: #d40000;
   }
+  #time.pre {
+    color: #ff8c00;
+  }
   #date {
     font-size: 3.5vw;
     color: #444444;
@@ -57,6 +60,9 @@
   }
   #status.kz {
     color: #d40000;
+  }
+  #status.pre {
+    color: #ff8c00;
   }
   #countdown {
     font-size: 3vw;
@@ -160,7 +166,7 @@ function update() {
   var secondsNow = h24 * 3600 + m * 60 + s;
   var kzStart = (8 * 60 + 30) * 60;
   var preEnd = (9 * 60 + 30) * 60;
-  var kzEnd = (11 * 60 + 0) * 60;
+  var kzEnd = (11 * 60 + 30) * 60;
   var inKZ = secondsNow >= kzStart && secondsNow < kzEnd;
 
   var timeEl = document.getElementById("time");
@@ -175,12 +181,14 @@ function update() {
   var cdText = "";
 
   if (inKZ) {
-    timeEl.className = "kz";
-    statusEl.className = "kz";
     if (secondsNow < preEnd) {
+      timeEl.className = "pre";
+      statusEl.className = "pre";
       statusEl.innerHTML = "PRE-MARKET";
       zone = "pre";
     } else {
+      timeEl.className = "kz";
+      statusEl.className = "kz";
       statusEl.innerHTML = "KILLZONE";
       zone = "kz";
     }
