@@ -213,6 +213,15 @@ function update() {
 
 update();
 setInterval(update, 1000);
+
+// Auto-reload toutes les heures pile (evite bugs sur longue duree)
+(function scheduleHourlyReload() {
+  var now = new Date();
+  var msToNextHour = (60 - now.getMinutes()) * 60000 - now.getSeconds() * 1000 - now.getMilliseconds();
+  setTimeout(function() {
+    location.reload();
+  }, msToNextHour);
+})();
 </script>
 </body>
 </html>
