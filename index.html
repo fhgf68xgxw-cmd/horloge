@@ -40,10 +40,10 @@
     text-align: center;
   }
   #time.kz {
-    color: #d40000;
+    color: #a30000;
   }
   #time.pre {
-    color: #ff8c00;
+    color: #b35900;
   }
   #date {
     font-size: 3.5vw;
@@ -59,10 +59,10 @@
     text-align: center;
   }
   #status.kz {
-    color: #d40000;
+    color: #a30000;
   }
   #status.pre {
-    color: #ff8c00;
+    color: #b35900;
   }
   #countdown {
     font-size: 3vw;
@@ -169,6 +169,18 @@ function update() {
   var kzEnd = (11 * 60 + 30) * 60;
   var inKZ = secondsNow >= kzStart && secondsNow < kzEnd;
 
+  var nyDay = ny.getUTCDay(); // 0=Dim, 1=Lun ... 5=Ven, 6=Sam
+  var marketClosed = false;
+  if (nyDay === 6) {
+    marketClosed = true; // Samedi, ferme toute la journee
+  } else if (nyDay === 0 && secondsNow < 18 * 3600) {
+    marketClosed = true; // Dimanche avant 18h NY
+  } else if (nyDay === 5 && secondsNow >= 17 * 3600) {
+    marketClosed = true; // Vendredi des 17h NY, ferme pour le week-end
+  } else if (nyDay >= 1 && nyDay <= 4 && secondsNow >= 17 * 3600 && secondsNow < 18 * 3600) {
+    marketClosed = true; // Pause quotidienne 17h-18h NY (Lun-Jeu)
+  }
+
   var timeEl = document.getElementById("time");
   var statusEl = document.getElementById("status");
   var dateEl = document.getElementById("date");
@@ -180,7 +192,12 @@ function update() {
   var zone; // none | pre | kz
   var cdText = "";
 
-  if (inKZ) {
+  if (marketClosed) {
+    timeEl.className = "";
+    statusEl.className = "";
+    statusEl.innerHTML = "MARKET CLOSED";
+    zone = "none";
+  } else if (inKZ) {
     if (secondsNow < preEnd) {
       timeEl.className = "pre";
       statusEl.className = "pre";
