@@ -58,19 +58,6 @@
   #status.kz {
     color: #d40000;
   }
-  #countdown {
-    font-size: 3vw;
-    color: #666666;
-    margin-top: 10px;
-    text-align: center;
-  }
-  #unlock {
-    position: absolute;
-    bottom: 10px;
-    font-size: 2.5vw;
-    color: #aaaaaa;
-    text-align: center;
-  }
 </style>
 </head>
 <body>
@@ -78,9 +65,7 @@
   <div id="time">--:--:--</div>
   <div id="date">--</div>
   <div id="status">-</div>
-  <div id="countdown"></div>
 </div>
-<div id="unlock">Touche l'écran pour activer le son</div>
 
 <script>
 // Calcule l'heure de New York manuellement (pas besoin d'Intl, marche sur iOS 9)
@@ -128,8 +113,6 @@ function unlockSound() {
   beep.play().then(function(){ beep.pause(); beep.currentTime = 0; soundReady = true; })
     .catch(function(){});
   soundReady = true;
-  var u = document.getElementById("unlock");
-  if (u) u.style.display = "none";
 }
 document.body.addEventListener("touchstart", unlockSound);
 document.body.addEventListener("click", unlockSound);
@@ -144,17 +127,6 @@ function playBeep() {
 
 // --- Countdown ---
 var prevZone = "none"; // none | pre | kz
-
-function fmtCountdown(totalSeconds) {
-  if (totalSeconds < 0) totalSeconds = 0;
-  var h = Math.floor(totalSeconds / 3600);
-  var m = Math.floor((totalSeconds % 3600) / 60);
-  var s = totalSeconds % 60;
-  var out = "";
-  if (h > 0) out += h + "h ";
-  out += pad(m) + "m " + pad(s) + "s";
-  return out;
-}
 
 function update() {
   var ny = getNYTime();
@@ -179,13 +151,11 @@ function update() {
   var timeEl = document.getElementById("time");
   var statusEl = document.getElementById("status");
   var dateEl = document.getElementById("date");
-  var cdEl = document.getElementById("countdown");
 
   timeEl.innerHTML = timeStr;
   dateEl.innerHTML = dateStr + " - NY Time";
 
   var zone; // none | pre | kz
-  var cdText = "";
 
   if (inKZ) {
     timeEl.className = "kz";
@@ -193,27 +163,16 @@ function update() {
     if (secondsNow < preEnd) {
       statusEl.innerHTML = "PRE-MARKET";
       zone = "pre";
-      cdText = "Killzone dans " + fmtCountdown(preEnd - secondsNow);
     } else {
       statusEl.innerHTML = "KILLZONE";
       zone = "kz";
-      cdText = "Fin dans " + fmtCountdown(kzEnd - secondsNow);
     }
   } else {
     timeEl.className = "";
     statusEl.className = "";
     statusEl.innerHTML = "-";
     zone = "none";
-    var secsUntilStart;
-    if (secondsNow < kzStart) {
-      secsUntilStart = kzStart - secondsNow;
-    } else {
-      secsUntilStart = (24 * 3600 - secondsNow) + kzStart;
-    }
-    cdText = "Pre-market dans " + fmtCountdown(secsUntilStart);
   }
-
-  cdEl.innerHTML = cdText;
 
   // Son sur transition d'entree de zone
   if (zone !== prevZone && (zone === "pre" || zone === "kz")) {
