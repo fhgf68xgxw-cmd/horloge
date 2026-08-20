@@ -58,6 +58,13 @@
   #status.kz {
     color: #d40000;
   }
+  #countdown {
+    font-size: 3vw;
+    color: #d40000;
+    font-weight: bold;
+    margin-top: 12px;
+    text-align: center;
+  }
 </style>
 </head>
 <body>
@@ -65,6 +72,7 @@
   <div id="time">--:--:--</div>
   <div id="date">--</div>
   <div id="status">-</div>
+  <div id="countdown"></div>
 </div>
 
 <script>
@@ -128,6 +136,13 @@ function playBeep() {
 // --- Countdown ---
 var prevZone = "none"; // none | pre | kz
 
+function fmtCountdown(totalSeconds) {
+  if (totalSeconds < 0) totalSeconds = 0;
+  var m = Math.floor(totalSeconds / 60);
+  var s = totalSeconds % 60;
+  return pad(m) + ":" + pad(s);
+}
+
 function update() {
   var ny = getNYTime();
   var h24 = ny.getUTCHours();
@@ -151,11 +166,13 @@ function update() {
   var timeEl = document.getElementById("time");
   var statusEl = document.getElementById("status");
   var dateEl = document.getElementById("date");
+  var cdEl = document.getElementById("countdown");
 
   timeEl.innerHTML = timeStr;
   dateEl.innerHTML = dateStr + " - NY Time";
 
   var zone; // none | pre | kz
+  var cdText = "";
 
   if (inKZ) {
     timeEl.className = "kz";
@@ -172,7 +189,20 @@ function update() {
     statusEl.className = "";
     statusEl.innerHTML = "-";
     zone = "none";
+
+    // Compte a rebours 5 min avant kzStart
+    var secsUntilStart;
+    if (secondsNow < kzStart) {
+      secsUntilStart = kzStart - secondsNow;
+    } else {
+      secsUntilStart = (24 * 3600 - secondsNow) + kzStart;
+    }
+    if (secsUntilStart <= 300) {
+      cdText = fmtCountdown(secsUntilStart);
+    }
   }
+
+  cdEl.innerHTML = cdText;
 
   // Son sur transition d'entree de zone
   if (zone !== prevZone && (zone === "pre" || zone === "kz")) {
