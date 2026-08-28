@@ -71,6 +71,47 @@
     margin-top: 12px;
     text-align: center;
   }
+  #sessions {
+    display: -webkit-box;
+    display: -webkit-flex;
+    display: flex;
+    -webkit-box-orient: horizontal;
+    -webkit-flex-direction: row;
+    flex-direction: row;
+    -webkit-box-pack: center;
+    -webkit-justify-content: center;
+    justify-content: center;
+    margin-top: 30px;
+    width: 100%;
+  }
+  .session-clock {
+    text-align: center;
+    margin: 0 3vw;
+  }
+  .session-label {
+    font-size: 2.2vw;
+    color: #666666;
+    font-weight: bold;
+    letter-spacing: 1px;
+  }
+  .session-time {
+    font-size: 5vw;
+    font-weight: bold;
+    color: #000000;
+    margin-top: 4px;
+  }
+  .session-time.kz {
+    color: #a30000;
+  }
+  .session-status {
+    font-size: 2vw;
+    color: #999999;
+    margin-top: 2px;
+  }
+  .session-status.kz {
+    color: #a30000;
+    font-weight: bold;
+  }
 </style>
 </head>
 <body>
@@ -79,6 +120,24 @@
   <div id="date">--</div>
   <div id="status">-</div>
   <div id="countdown"></div>
+
+  <div id="sessions">
+    <div class="session-clock">
+      <div class="session-label">SYDNEY</div>
+      <div class="session-time" id="sydney-time">--:--</div>
+      <div class="session-status" id="sydney-status">-</div>
+    </div>
+    <div class="session-clock">
+      <div class="session-label">TOKYO</div>
+      <div class="session-time" id="tokyo-time">--:--</div>
+      <div class="session-status" id="tokyo-status">-</div>
+    </div>
+    <div class="session-clock">
+      <div class="session-label">LONDRES</div>
+      <div class="session-time" id="london-time">--:--</div>
+      <div class="session-status" id="london-status">-</div>
+    </div>
+  </div>
 </div>
 
 <script>
@@ -110,6 +169,53 @@ function getNYTime() {
   var offsetHours = isUSDST(utcDate) ? -4 : -5;
   var nyMs = utcMs + (offsetHours * 3600000);
   return new Date(nyMs);
+}
+
+// DST Europe : dernier dimanche mars 1h UTC -> dernier dimanche octobre 1h UTC
+function isEUDST(utcDate) {
+  var year = utcDate.getUTCFullYear();
+  var marchBase = new Date(Date.UTC(year, 2, 31, 1));
+  marchBase.setUTCDate(31 - marchBase.getUTCDay());
+  var octBase = new Date(Date.UTC(year, 9, 31, 1));
+  octBase.setUTCDate(31 - octBase.getUTCDay());
+  var t = utcDate.getTime();
+  return t >= marchBase.getTime() && t < octBase.getTime();
+}
+
+// DST Australie : 1er dimanche octobre 2h AEST -> 1er dimanche avril 3h AEDT
+function isAUDST(utcDate) {
+  var year = utcDate.getUTCFullYear();
+  var octFirst = new Date(Date.UTC(year, 9, 1));
+  var octOffset = (7 - octFirst.getUTCDay()) % 7;
+  var octSunday = 1 + octOffset;
+  var dstStart = new Date(Date.UTC(year, 9, octSunday, -8)); // 2h AEST(+10) = 16h UTC veille
+
+  var aprFirst = new Date(Date.UTC(year, 3, 1));
+  var aprOffset = (7 - aprFirst.getUTCDay()) % 7;
+  var aprSunday = 1 + aprOffset;
+  var dstEnd = new Date(Date.UTC(year, 3, aprSunday, -8)); // 3h AEDT(+11) = 16h UTC veille
+
+  var t = utcDate.getTime();
+  if (t >= dstStart.getTime()) return true;
+  if (t < dstEnd.getTime()) return true;
+  return false;
+}
+
+function getCityTime(offsetFn) {
+  var nowMs = new Date().getTime();
+  var utcDate = new Date(nowMs);
+  var offset = offsetFn(utcDate);
+  return new Date(nowMs + offset * 3600000);
+}
+
+function getSydneyTime() {
+  return getCityTime(function (d) { return isAUDST(d) ? 11 : 10; });
+}
+function getTokyoTime() {
+  return getCityTime(function () { return 9; });
+}
+function getLondonTime() {
+  return getCityTime(function (d) { return isEUDST(d) ? 1 : 0; });
 }
 
 var days = ["Dimanche","Lundi","Mardi","Mercredi","Jeudi","Vendredi","Samedi"];
@@ -234,6 +340,34 @@ function update() {
     playBeep();
   }
   prevZone = zone;
+
+  // --- Sessions Sydney / Tokyo / Londres ---
+  updateSession(getSydneyTime(), "sydney", 8 * 3600, 17 * 3600);
+  updateSession(getTokyoTime(), "tokyo", 9 * 3600, 18 * 3600);
+  updateSession(getLondonTime(), "london", 8 * 3600, 17 * 3600);
+}
+
+function updateSession(cityDate, id, startSec, endSec) {
+  var h = cityDate.getUTCHours();
+  var m = cityDate.getUTCMinutes();
+  var s = cityDate.getUTCSeconds();
+  var secs = h * 3600 + m * 60 + s;
+  var inKZ = secs >= startSec && secs < endSec;
+
+  var timeEl = document.getElementById(id + "-time");
+  var statusEl = document.getElementById(id + "-status");
+
+  timeEl.innerHTML = pad(h) + ":" + pad(m);
+
+  if (inKZ) {
+    timeEl.className = "session-time kz";
+    statusEl.className = "session-status kz";
+    statusEl.innerHTML = "KILLZONE";
+  } else {
+    timeEl.className = "session-time";
+    statusEl.className = "session-status";
+    statusEl.innerHTML = "-";
+  }
 }
 
 update();
