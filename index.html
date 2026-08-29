@@ -21,9 +21,9 @@
     display: -webkit-box;
     display: -webkit-flex;
     display: flex;
-    -webkit-box-orient: vertical;
-    -webkit-flex-direction: column;
-    flex-direction: column;
+    -webkit-box-orient: horizontal;
+    -webkit-flex-direction: row;
+    flex-direction: row;
     -webkit-box-pack: center;
     -webkit-justify-content: center;
     justify-content: center;
@@ -31,112 +31,75 @@
     -webkit-align-items: center;
     align-items: center;
     font-family: Helvetica, Arial, sans-serif;
+    flex-wrap: nowrap;
   }
-  #time {
-    font-size: 14vw;
-    font-weight: bold;
-    color: #000000;
-    letter-spacing: 1px;
+  .clock-block {
     text-align: center;
+    margin: 0 1vw;
   }
-  #time.kz {
-    color: #a30000;
-  }
-  #time.pre {
-    color: #b35900;
-  }
-  #date {
-    font-size: 3.5vw;
-    color: #444444;
-    margin-top: 8px;
-    text-align: center;
-  }
-  #status {
-    font-size: 4vw;
-    font-weight: bold;
-    margin-top: 16px;
-    color: #888888;
-    text-align: center;
-  }
-  #status.kz {
-    color: #a30000;
-  }
-  #status.pre {
-    color: #b35900;
-  }
-  #countdown {
-    font-size: 3vw;
-    color: #d40000;
-    font-weight: bold;
-    margin-top: 12px;
-    text-align: center;
-  }
-  #sessions {
-    display: -webkit-box;
-    display: -webkit-flex;
-    display: flex;
-    -webkit-box-orient: horizontal;
-    -webkit-flex-direction: row;
-    flex-direction: row;
-    -webkit-box-pack: center;
-    -webkit-justify-content: center;
-    justify-content: center;
-    margin-top: 30px;
-    width: 100%;
-  }
-  .session-clock {
-    text-align: center;
-    margin: 0 3vw;
-  }
-  .session-label {
-    font-size: 2.2vw;
+  .clock-label {
+    font-size: 1.6vw;
     color: #666666;
     font-weight: bold;
     letter-spacing: 1px;
   }
-  .session-time {
+  .clock-time {
     font-size: 5vw;
     font-weight: bold;
     color: #000000;
-    margin-top: 4px;
+    margin-top: 6px;
+    letter-spacing: 1px;
+    white-space: nowrap;
   }
-  .session-time.kz {
+  .clock-time.kz {
     color: #a30000;
   }
-  .session-status {
-    font-size: 2vw;
-    color: #999999;
-    margin-top: 2px;
+  .clock-time.pre {
+    color: #b35900;
   }
-  .session-status.kz {
+  .clock-status {
+    font-size: 1.8vw;
+    font-weight: bold;
+    color: #888888;
+    margin-top: 8px;
+    white-space: nowrap;
+  }
+  .clock-status.kz {
+    color: #a30000;
+  }
+  .clock-status.pre {
+    color: #b35900;
+  }
+  .clock-countdown {
+    font-size: 1.2vw;
     color: #a30000;
     font-weight: bold;
+    margin-top: 6px;
   }
 </style>
 </head>
 <body>
 <div id="wrap">
-  <div id="time">--:--:--</div>
-  <div id="date">--</div>
-  <div id="status">-</div>
-  <div id="countdown"></div>
-
-  <div id="sessions">
-    <div class="session-clock">
-      <div class="session-label">SYDNEY</div>
-      <div class="session-time" id="sydney-time">--:--</div>
-      <div class="session-status" id="sydney-status">-</div>
-    </div>
-    <div class="session-clock">
-      <div class="session-label">TOKYO</div>
-      <div class="session-time" id="tokyo-time">--:--</div>
-      <div class="session-status" id="tokyo-status">-</div>
-    </div>
-    <div class="session-clock">
-      <div class="session-label">LONDRES</div>
-      <div class="session-time" id="london-time">--:--</div>
-      <div class="session-status" id="london-status">-</div>
-    </div>
+  <div class="clock-block">
+    <div class="clock-label">NEW YORK</div>
+    <div class="clock-time" id="time">--:--</div>
+    <div class="clock-status" id="status">-</div>
+    <div class="clock-countdown" id="countdown"></div>
+  </div>
+  <div class="clock-block">
+    <div class="clock-label">SYDNEY</div>
+    <div class="clock-time" id="sydney-time">--:--</div>
+    <div class="clock-status" id="sydney-status">-</div>
+  </div>
+  <div class="clock-block">
+    <div class="clock-label">TOKYO</div>
+    <div class="clock-time" id="tokyo-time">--:--</div>
+    <div class="clock-status" id="tokyo-status">-</div>
+  </div>
+  <div class="clock-block">
+    <div class="clock-label">LONDRES</div>
+    <div class="clock-time" id="london-time">--:--</div>
+    <div class="clock-status" id="london-status">-</div>
   </div>
 </div>
 
@@ -144,7 +107,6 @@
 // Calcule l'heure de New York manuellement (pas besoin d'Intl, marche sur iOS 9)
 function isUSDST(utcDate) {
   var year = utcDate.getUTCFullYear();
-  // 2e dimanche de mars, 2h locale
   var marchSecondSunday = new Date(Date.UTC(year, 2, 1));
   var day = marchSecondSunday.getUTCDay();
   var offsetToFirstSunday = (7 - day) % 7;
@@ -152,7 +114,6 @@ function isUSDST(utcDate) {
   var secondSunday = firstSunday + 7;
   var dstStart = new Date(Date.UTC(year, 2, secondSunday, 7)); // 2am EST = 7am UTC
 
-  // 1er dimanche de novembre, 2h locale
   var novFirst = new Date(Date.UTC(year, 10, 1));
   var novDay = novFirst.getUTCDay();
   var novOffsetToSunday = (7 - novDay) % 7;
@@ -164,7 +125,7 @@ function isUSDST(utcDate) {
 
 function getNYTime() {
   var now = new Date();
-  var utcMs = now.getTime(); // epoch UTC absolu, pas besoin de conversion
+  var utcMs = now.getTime(); // epoch UTC absolu
   var utcDate = new Date(utcMs);
   var offsetHours = isUSDST(utcDate) ? -4 : -5;
   var nyMs = utcMs + (offsetHours * 3600000);
@@ -188,12 +149,12 @@ function isAUDST(utcDate) {
   var octFirst = new Date(Date.UTC(year, 9, 1));
   var octOffset = (7 - octFirst.getUTCDay()) % 7;
   var octSunday = 1 + octOffset;
-  var dstStart = new Date(Date.UTC(year, 9, octSunday, -8)); // 2h AEST(+10) = 16h UTC veille
+  var dstStart = new Date(Date.UTC(year, 9, octSunday, -8));
 
   var aprFirst = new Date(Date.UTC(year, 3, 1));
   var aprOffset = (7 - aprFirst.getUTCDay()) % 7;
   var aprSunday = 1 + aprOffset;
-  var dstEnd = new Date(Date.UTC(year, 3, aprSunday, -8)); // 3h AEDT(+11) = 16h UTC veille
+  var dstEnd = new Date(Date.UTC(year, 3, aprSunday, -8));
 
   var t = utcDate.getTime();
   if (t >= dstStart.getTime()) return true;
@@ -217,9 +178,6 @@ function getTokyoTime() {
 function getLondonTime() {
   return getCityTime(function (d) { return isEUDST(d) ? 1 : 0; });
 }
-
-var days = ["Dimanche","Lundi","Mardi","Mercredi","Jeudi","Vendredi","Samedi"];
-var months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
 
 function pad(n) {
   return n < 10 ? "0" + n : "" + n;
@@ -245,7 +203,6 @@ function playBeep() {
   } catch (e) {}
 }
 
-// --- Countdown ---
 var prevZone = "none"; // none | pre | kz
 
 function fmtCountdown(totalSeconds) {
@@ -261,14 +218,8 @@ function update() {
   var m = ny.getUTCMinutes();
   var s = ny.getUTCSeconds();
 
-  var ampm = h24 >= 12 ? "PM" : "AM";
-  var h12 = h24 % 12;
-  if (h12 === 0) h12 = 12;
+  var timeStr = pad(h24) + ":" + pad(m);
 
-  var timeStr = pad(h12) + ":" + pad(m) + " " + ampm;
-  var dateStr = days[ny.getUTCDay()] + " " + ny.getUTCDate() + " " + months[ny.getUTCMonth()];
-
-  // Killzone: 8:30 - 11:00 NY time (couvre premarket 8h30-9h30 + killzone 9h30-11h00)
   var secondsNow = h24 * 3600 + m * 60 + s;
   var kzStart = (8 * 60 + 30) * 60;
   var preEnd = (9 * 60 + 30) * 60;
@@ -278,50 +229,47 @@ function update() {
   var nyDay = ny.getUTCDay(); // 0=Dim, 1=Lun ... 5=Ven, 6=Sam
   var marketClosed = false;
   if (nyDay === 6) {
-    marketClosed = true; // Samedi, ferme toute la journee
+    marketClosed = true;
   } else if (nyDay === 0 && secondsNow < 18 * 3600) {
-    marketClosed = true; // Dimanche avant 18h NY
+    marketClosed = true;
   } else if (nyDay === 5 && secondsNow >= 17 * 3600) {
-    marketClosed = true; // Vendredi des 17h NY, ferme pour le week-end
+    marketClosed = true;
   } else if (nyDay >= 1 && nyDay <= 4 && secondsNow >= 17 * 3600 && secondsNow < 18 * 3600) {
-    marketClosed = true; // Pause quotidienne 17h-18h NY (Lun-Jeu)
+    marketClosed = true;
   }
 
   var timeEl = document.getElementById("time");
   var statusEl = document.getElementById("status");
-  var dateEl = document.getElementById("date");
   var cdEl = document.getElementById("countdown");
 
   timeEl.innerHTML = timeStr;
-  dateEl.innerHTML = dateStr + " - NY Time";
 
   var zone; // none | pre | kz
   var cdText = "";
 
   if (marketClosed) {
-    timeEl.className = "";
-    statusEl.className = "";
+    timeEl.className = "clock-time";
+    statusEl.className = "clock-status";
     statusEl.innerHTML = "MARKET CLOSED";
     zone = "none";
   } else if (inKZ) {
     if (secondsNow < preEnd) {
-      timeEl.className = "pre";
-      statusEl.className = "pre";
+      timeEl.className = "clock-time pre";
+      statusEl.className = "clock-status pre";
       statusEl.innerHTML = "PRE-MARKET";
       zone = "pre";
     } else {
-      timeEl.className = "kz";
-      statusEl.className = "kz";
+      timeEl.className = "clock-time kz";
+      statusEl.className = "clock-status kz";
       statusEl.innerHTML = "KILLZONE";
       zone = "kz";
     }
   } else {
-    timeEl.className = "";
-    statusEl.className = "";
+    timeEl.className = "clock-time";
+    statusEl.className = "clock-status";
     statusEl.innerHTML = "-";
     zone = "none";
 
-    // Compte a rebours 5 min avant kzStart
     var secsUntilStart;
     if (secondsNow < kzStart) {
       secsUntilStart = kzStart - secondsNow;
@@ -335,19 +283,17 @@ function update() {
 
   cdEl.innerHTML = cdText;
 
-  // Son sur transition d'entree de zone
   if (zone !== prevZone && (zone === "pre" || zone === "kz")) {
     playBeep();
   }
   prevZone = zone;
 
-  // --- Sessions Sydney / Tokyo / Londres ---
-  updateSession(getSydneyTime(), "sydney", 8 * 3600, 17 * 3600);
-  updateSession(getTokyoTime(), "tokyo", 9 * 3600, 18 * 3600);
-  updateSession(getLondonTime(), "london", 8 * 3600, 17 * 3600);
+  updateSession(getSydneyTime(), "sydney", 8 * 3600, 17 * 3600, marketClosed);
+  updateSession(getTokyoTime(), "tokyo", 9 * 3600, 18 * 3600, marketClosed);
+  updateSession(getLondonTime(), "london", 8 * 3600, 17 * 3600, marketClosed);
 }
 
-function updateSession(cityDate, id, startSec, endSec) {
+function updateSession(cityDate, id, startSec, endSec, marketClosed) {
   var h = cityDate.getUTCHours();
   var m = cityDate.getUTCMinutes();
   var s = cityDate.getUTCSeconds();
@@ -359,13 +305,17 @@ function updateSession(cityDate, id, startSec, endSec) {
 
   timeEl.innerHTML = pad(h) + ":" + pad(m);
 
-  if (inKZ) {
-    timeEl.className = "session-time kz";
-    statusEl.className = "session-status kz";
+  if (marketClosed) {
+    timeEl.className = "clock-time";
+    statusEl.className = "clock-status";
+    statusEl.innerHTML = "MARKET CLOSED";
+  } else if (inKZ) {
+    timeEl.className = "clock-time kz";
+    statusEl.className = "clock-status kz";
     statusEl.innerHTML = "KILLZONE";
   } else {
-    timeEl.className = "session-time";
-    statusEl.className = "session-status";
+    timeEl.className = "clock-time";
+    statusEl.className = "clock-status";
     statusEl.innerHTML = "-";
   }
 }
